@@ -85,6 +85,16 @@ rootProject.the<NodeJsRootExtension>().apply {
 	version = "22.0.0"
 }
 
+tasks.withType<Jar> {
+    from(rootDir.resolve("LICENSE-APACHE")) {
+        into("META-INF")
+    }
+
+    from(rootDir.resolve("LICENSE-MIT")) {
+        into("META-INF")
+    }
+}
+
 tasks.withType<Test>().configureEach {
 	maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
 }
