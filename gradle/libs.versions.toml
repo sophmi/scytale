@@ -1,0 +1,15 @@
+[versions]
+junit = "5.10.2"
+kotlin = "1.9.23"
+versions-plugin = "0.51.0"
+
+[libraries]
+# JVM
+junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+
+# Gradle
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+
+[plugins]
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+versions-plugin = { id = "com.github.ben-manes.versions", version.ref = "versions-plugin" }
