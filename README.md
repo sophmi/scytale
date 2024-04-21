@@ -1,7 +1,7 @@
 # Scytale
 
 Kotlin Multiplatform implementations of uncommon or legacy cryptographic functions. All platforms
-are supported (although not all are tested).
+are supported (although not all are tested - see [Platform Support](#platform-support)).
 
 Security is explicitly a non-goal (see [Security](#security)); implementations prioritise 
 correctness and intelligibility.
@@ -17,3 +17,7 @@ in place of audited libraries maintained by experts. Consequently, security is n
 (use state-of-the-art cryptography instead) and side-channel attacks are of little concern.
 
 Ensure your use case does not require greater security guarantees than this library provides.
+
+## Licensing
+
+Scytale is dual-licensed under [Apache 2.0](LICENSE-APACHE) and [MIT](LICENSE-MIT).
