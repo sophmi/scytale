@@ -17,5 +17,5 @@ dependencyResolutionManagement {
 rootProject.name = "scytale"
 
 include(
-    ":whirlpool",
+    ":whirlpool"
 )
