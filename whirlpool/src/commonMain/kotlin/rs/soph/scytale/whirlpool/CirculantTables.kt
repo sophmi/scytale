@@ -2,8 +2,19 @@
 
 package rs.soph.scytale.whirlpool
 
+/**
+ * Lookup tables containing the premultiplication of the linear diffusion layer `θ` with the
+ * non-linear layer `γ`, i.e. the 8x8 circulant MDS matrix multiplied by the substitution box
+ * (for each element):
+ *
+ * ```θ ◦ γ ≡ cir(01, 01, 04, 01, 08, 05, 02, 09) * S_BOX[x]``` where `x ∈ GF(2^8)`.
+ *
+ * The premultiplication leads to an efficient implementation of `ρ[k]` as suggested in
+ * 'The WHIRLPOOL Hashing Function', section 7.1.
+ */
 internal object CirculantTables {
 
+	/** Size of the 2^8 Galois field, or the number of possible values in one byte. */
 	private const val FIELD_SIZE = 1 shl Byte.SIZE_BITS
 
 	/**
@@ -14,6 +25,7 @@ internal object CirculantTables {
 	 */
 	private val tables = LongArray(Matrix.WIDTH * FIELD_SIZE)
 
+	/** Non-linear layer `γ(x)` (the substitution box). */
 	private val S_BOX = shortArrayOf(
 		0x18, 0x23, 0xC6, 0xE8, 0x87, 0xB8, 0x01, 0x4F, 0x36, 0xA6, 0xD2, 0xF5, 0x79, 0x6F, 0x91, 0x52,
 		0x60, 0xBC, 0x9B, 0x8E, 0xA3, 0x0C, 0x7B, 0x35, 0x1D, 0xE0, 0xD7, 0xC2, 0x2E, 0x4B, 0xFE, 0x57,
@@ -33,6 +45,9 @@ internal object CirculantTables {
 		0x16, 0x3A, 0x69, 0x09, 0x70, 0xB6, 0xD0, 0xED, 0xCC, 0x42, 0x98, 0xA4, 0x28, 0x5C, 0xF8, 0x86,
 	)
 
+	/**
+	 * `(2^8)` Galois field reduction polynomial `2^8 + 2^4 + 2^3 + 2^2 + 1`.
+	 */
 	private const val FIELD_REDUCTION: Int = 0x11D
 
 	init {
