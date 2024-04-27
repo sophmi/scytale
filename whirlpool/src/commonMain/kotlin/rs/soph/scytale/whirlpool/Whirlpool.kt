@@ -62,23 +62,79 @@ public class Whirlpool {
 	public fun add(input: ByteArray) {
 		val bits = input.size.toLong() * Byte.SIZE_BITS
 
+		if (bitOffset % Byte.SIZE_BITS != 0) {
+			addBits(input, bits)
+		} else {
+			plaintextBits += bits
+			var copied = 0
+
+			while (copied < input.size) {
+				val move = min(input.size - copied, buffer.size - offset)
+				input.copyInto(buffer, destinationOffset = offset, startIndex = copied, endIndex = copied + move)
+				copied += move
+				offset += move
+
+				if (offset == BLOCK_SIZE_BYTES) {
+					encipherBuffer()
+					offset = 0
+				}
+			}
+
+			bitOffset = offset * Byte.SIZE_BITS
+			buffer.fill(0, offset, BLOCK_SIZE_BYTES)
+		}
+	}
+
+	public fun addBits(input: ByteArray, bits: Long) { // Partially derived from (public domain) reference impl
 		plaintextBits += bits
-		var copied = 0
 
-		while (copied < input.size) {
-			val move = min(input.size - copied, buffer.size - offset)
-			input.copyInto(buffer, destinationOffset = offset, startIndex = copied, endIndex = copied + move)
-			copied += move
-			offset += move
+		val ignored = (Byte.SIZE_BITS - (bits and 7).toInt()) and 7 // amount of bits in input[off] we aren't reading
+		val usedOut = bitOffset and 7 // amount of bits in buffer[offset] that we've already written
+		val freeOut = Byte.SIZE_BITS - usedOut
+		var remainingInput = bits
+		var pos = 0
 
-			if (offset == BLOCK_SIZE_BYTES) {
+		var b: Int
+		while (remainingInput > Byte.SIZE_BITS) {
+			b = (input[pos].toInt() shl ignored and 0xFF) or (input[++pos].toInt() and 0xFF ushr (8 - ignored))
+
+			buffer[offset] = (buffer[offset].toInt() or (b ushr usedOut)).toByte()
+			offset++
+			bitOffset += freeOut
+
+			if (bitOffset == BLOCK_SIZE_BITS) {
 				encipherBuffer()
 				offset = 0
+				bitOffset = 0
 			}
+
+			buffer[offset] = (b shl freeOut).toByte()
+			bitOffset += usedOut
+
+			remainingInput -= Byte.SIZE_BITS
 		}
 
-		bitOffset = offset * Byte.SIZE_BITS
-		buffer.fill(0, offset, BLOCK_SIZE_BYTES)
+		if (remainingInput > 0) {
+			b = input[pos].toInt() shl ignored and 0xFF
+			buffer[offset] = (buffer[offset].toInt() or (b ushr usedOut)).toByte()
+		} else {
+			b = 0
+		}
+
+		if (usedOut + remainingInput >= Byte.SIZE_BITS) {
+			if (bitOffset + freeOut == BLOCK_SIZE_BITS) {
+				encipherBuffer()
+				offset = 0
+				bitOffset = 0
+				remainingInput -= freeOut
+			} else {
+				offset++
+			}
+
+			buffer[offset] = (b shl freeOut).toByte()
+		}
+
+		bitOffset += remainingInput.toInt()
 	}
 
 	@JvmOverloads
@@ -155,7 +211,10 @@ public class Whirlpool {
 		public const val DIGEST_BITS: Int = 64 * Byte.SIZE_BITS
 
 		/** Number of **bytes** used by a WHIRLPOOL digest. */
-		public const val DIGEST_BYTES: Int = 64
+		public const val DIGEST_BYTES: Int = 64 * Byte.SIZE_BYTES
+
+		/** Number of **bits** the block cipher is applied to at once. */
+		private const val BLOCK_SIZE_BITS: Int = Matrix.WIDTH * Matrix.WIDTH * Byte.SIZE_BITS // 512
 
 		/** Number of **bytes** the block cipher is applied to at once. */
 		private const val BLOCK_SIZE_BYTES: Int = Matrix.WIDTH * Matrix.WIDTH * Byte.SIZE_BYTES // 64

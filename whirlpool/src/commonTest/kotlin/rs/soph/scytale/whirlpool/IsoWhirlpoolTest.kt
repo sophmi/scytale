@@ -1,5 +1,6 @@
 package rs.soph.scytale.whirlpool
 
+import kotlin.code
 import kotlin.collections.withIndex
 import kotlin.js.JsName
 import kotlin.test.Test
@@ -29,6 +30,24 @@ class IsoWhirlpoolTest {
 			val (input, expected) = vector
 			val actual = Whirlpool.hash(input.encodeToByteArray())
 
+			assertContentEquals(expected, actual, "Input $index failed to match")
+		}
+	}
+
+	@Test
+	@JsName("iso_inputs_as_bits") // TODO remove JsName after kotlin 2.0.0
+	fun `iso inputs match when written bit by bit`() {
+		for ((index, vector) in ISO_VECTORS.withIndex()) {
+			val (input, expected) = vector
+			val whirlpool = Whirlpool()
+
+			val byte = ByteArray(1)
+			for (b in input) {
+				byte[0] = b.code.toByte()
+				whirlpool.addBits(byte, Byte.SIZE_BITS.toLong())
+			}
+
+			val actual = whirlpool.finish()
 			assertContentEquals(expected, actual, "Input $index failed to match")
 		}
 	}
