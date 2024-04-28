@@ -4,6 +4,9 @@ import kotlin.collections.copyInto
 import kotlin.collections.fill
 import kotlin.jvm.JvmInline
 
+/**
+ * An 8x8 Matrix used by [Whirlpool].
+ */
 @JvmInline
 internal value class Matrix(private val data: LongArray = LongArray(SIZE_LONGS)) {
 
@@ -21,6 +24,9 @@ internal value class Matrix(private val data: LongArray = LongArray(SIZE_LONGS))
         data[index] = value
     }
 
+    /**
+     * Sets each row in this Matrix to the value returned by the [function] (called once per row).
+     */
     inline fun set(function: (Int) -> Long) {
         repeat(SIZE_LONGS) { row ->
             this[row] = function(row)
@@ -75,12 +81,13 @@ internal value class Matrix(private val data: LongArray = LongArray(SIZE_LONGS))
     }
 
     companion object {
-        /** Size of the matrix in `long`s. */
+        /** Size of the matrix in `Long`s. */
         const val SIZE_LONGS: Int = 8
 
         /** Width of the NxN hash state matrix (i.e. N = 8). */
         const val WIDTH: Int = 8
 
+        /** Widens this `Byte` to a `Long`, without sign extension. */
         private fun Byte.ulong(): Long = toLong() and 0xFF
     }
 }
