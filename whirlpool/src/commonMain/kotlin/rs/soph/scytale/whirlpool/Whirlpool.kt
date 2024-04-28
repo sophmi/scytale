@@ -289,6 +289,13 @@ public class Whirlpool {
 				// no need to reset(), Whirlpool instance is discarded
 			}
 		}
+
+		/**
+		 * Applies the WHIRLPOOL hash function to the [input] String, treating it as UTF-8.
+		 */
+		public fun hashUtf8(input: String): ByteArray {
+			return hash(input.encodeToByteArray())
+		}
 	}
 }
 
