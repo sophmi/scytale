@@ -59,6 +59,15 @@ public class Whirlpool {
 	/** State of the block cipher during each use. */
 	private var state = Matrix()
 
+	/**
+	 * Applies the block cipher to [input]. If a hash has already been produced from this Whirlpool
+	 * instance (i.e. [finish] has been called), [reset] **must** be called before adding data
+	 * again.
+	 *
+	 * To hash an arbitrary amount of _bits_, use [addBits].
+	 *
+	 * @param input The plaintext data to hash.
+	 */
 	public fun add(input: ByteArray) {
 		val bits = input.size.toLong() * Byte.SIZE_BITS
 
@@ -85,6 +94,13 @@ public class Whirlpool {
 		}
 	}
 
+	/**
+	 * Applies the block cipher to [input]. If a hash has already been produced from this Whirlpool instance (i.e.
+	 * [finish] has been called), [reset] **must be called** before adding data again.
+	 *
+	 * @param input The plaintext data to hash.
+	 * @param bits The amount of plaintext bits to process.
+	 */
 	public fun addBits(input: ByteArray, bits: Long) { // Partially derived from (public domain) reference impl
 		plaintextBits += bits
 
@@ -137,6 +153,11 @@ public class Whirlpool {
 		bitOffset += remainingInput.toInt()
 	}
 
+	/**
+	 * Completes the application of the WHIRLPOOL hash function and returns the resulting digest.
+	 *
+	 * Users **must** call [reset] after this function if this [Whirlpool] instance will be reused.
+	 */
 	@JvmOverloads
 	public fun finish(digest: ByteArray = ByteArray(DIGEST_BYTES)): ByteArray {
 		// unconditionally pad with a 1-bit; every bit after this will be 0 (except for the message length at the end)
@@ -161,6 +182,7 @@ public class Whirlpool {
 		return hash.copyInto(digest)
 	}
 
+	/** Re-initialize the hashing state. */
 	public fun reset() {
 		plaintextBits = 0
 		hash.clear()
@@ -169,11 +191,18 @@ public class Whirlpool {
 		buffer[0] = 0 // only need to clear buffer[0]; all subsequent bytes are overwritten anyway
 	}
 
+	/**
+	 * Applies the mapping function μ (map the 512-bit data [buffer] into an 8x8 matrix [block]),
+	 * then the block cipher.
+	 */
 	private fun encipherBuffer() {
 		block.copyFrom(buffer)
 		cipher()
 	}
 
+	/**
+	 * Apply the block cipher W to the current [block].
+	 */
 	private fun cipher() {
 		hash.copyInto(key)
 		state.set { block[it] xor key[it] } // σ[K^0]
@@ -198,6 +227,11 @@ public class Whirlpool {
 		hash.set { hash[it] xor state[it] xor block[it] }
 	}
 
+	/**
+	 * Applies the round function `ρ[k] = σ[k] ◦ θ ◦ π ◦ γ` to one row.
+	 *
+	 * Note that `θ ◦ γ` has been precomputed (see [CirculantTables]).
+	 */
 	private fun round(rowIndex: Int, key: Matrix, k: Long): Long {
 		return (0..<Matrix.WIDTH).fold(k) { acc, column ->
 			val element = key[rowIndex - column and 7, column] // apply the cyclical permutation π
@@ -245,6 +279,9 @@ public class Whirlpool {
 			}
 		}
 
+		/**
+		 * Applies the WHIRLPOOL hash function to the [data].
+		 */
 		public fun hash(data: ByteArray): ByteArray {
 			return with(Whirlpool()) {
 				add(data)

@@ -6,6 +6,9 @@ import kotlin.collections.copyInto
 import kotlin.collections.fill
 import kotlin.jvm.JvmInline
 
+/**
+ * An 8x8 Matrix used by [Whirlpool].
+ */
 @JvmInline
 internal value class Matrix(private val data: LongArray = LongArray(SIZE_LONGS)) {
 
@@ -23,6 +26,9 @@ internal value class Matrix(private val data: LongArray = LongArray(SIZE_LONGS))
 		data[index] = value
 	}
 
+	/**
+	 * Sets each row in this Matrix to the value returned by the [function] (called once per row).
+	 */
 	inline fun set(function: (Int) -> Long) {
 		repeat(SIZE_LONGS) { row ->
 			this[row] = function(row)
