@@ -24,7 +24,7 @@ class IsoWhirlpoolTest {
 	// attempting to print it or view it in a debugger may lead to sadness
 
 	@Test
-	@JsName("iso_inputs") // TODO remove JsName after kotlin 2.0.0
+	@JsName("iso_inputs") // TODO will no longer need JsName after kotlin 2.1.0
 	fun `iso inputs match`() {
 		for ((index, vector) in ISO_VECTORS.withIndex()) {
 			val (input, expected) = vector
@@ -35,7 +35,7 @@ class IsoWhirlpoolTest {
 	}
 
 	@Test
-	@JsName("iso_inputs_as_bits") // TODO remove JsName after kotlin 2.0.0
+	@JsName("iso_inputs_as_bits") // TODO will no longer need JsName after kotlin 2.1.0
 	fun `iso inputs match when written bit by bit`() {
 		for ((index, vector) in ISO_VECTORS.withIndex()) {
 			val (input, expected) = vector

@@ -1,6 +1,6 @@
 [versions]
-junit = "5.10.2"
-kotlin = "1.9.23"
+junit = "5.10.3"
+kotlin = "2.0.10"
 versions-plugin = "0.51.0"
 
 [libraries]

@@ -22,7 +22,7 @@ import kotlin.text.hexToByteArray
 class NessieWhirlpoolTest {
 
 	@Test
-	@JsName("input_of_zeroes") // TODO remove after 2.0.0
+	@JsName("input_of_zeroes") // TODO will no longer need JsName after kotlin 2.1.0
 	fun `inputs of zeroes match`() {
 		for ((length, expected) in ZEROES_VECTORS.withIndex()) {
 			val digest = with(Whirlpool()) {
@@ -35,7 +35,7 @@ class NessieWhirlpoolTest {
 	}
 
 	@Test
-	@JsName("input_of_single_set_bit") // TODO remove after 2.0.0
+	@JsName("input_of_single_set_bit") // TODO will no longer need JsName after kotlin 2.1.0
 	fun `inputs containing a single set bit match`() {
 		for ((index, expected) in SET_BIT_VECTORS.withIndex()) {
 			val input = ByteArray(SINGLE_SET_BIT_INPUT_SIZE)
@@ -55,7 +55,5 @@ class NessieWhirlpoolTest {
 
 		private val ZEROES_VECTORS = NessieTestVectors.ZEROES.map(String::hexToByteArray)
 		private val SET_BIT_VECTORS = NessieTestVectors.SET_BIT.map(String::hexToByteArray)
-
 	}
-
 }
