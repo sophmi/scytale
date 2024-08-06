@@ -32,6 +32,14 @@ Scytale is tested on:
 - Kotlin/JS (browser and Node.js)
 - Kotlin/Wasm (browser and Node.js)
 
+## Contributing
+Scytale is not a general-purpose Kotlin Multiplatform cryptography library. Before contributing a
+new implementation, please open an issue to verify that the algorithm will be accepted - in 
+particular, it must not be a modern one that users could reasonably assume would use a
+cryptographically-secure implementation (e.g. ECDHE, AES-GCM).
+
+See the [contribution guidelines](CONTRIBUTING.md) for further information.
+
 ## Licensing
 
 Scytale is dual-licensed under [Apache 2.0](LICENSE-APACHE) and [MIT](LICENSE-MIT). Users may use
