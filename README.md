@@ -34,4 +34,5 @@ Scytale is tested on:
 
 ## Licensing
 
-Scytale is dual-licensed under [Apache 2.0](LICENSE-APACHE) and [MIT](LICENSE-MIT).
+Scytale is dual-licensed under [Apache 2.0](LICENSE-APACHE) and [MIT](LICENSE-MIT). Users may use
+Scytale under the terms of either license, at their preference.
