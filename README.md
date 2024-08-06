@@ -18,6 +18,19 @@ in place of audited libraries maintained by experts. Consequently, security is n
 
 Ensure your use case does not require greater security guarantees than this library provides.
 
+## Users
+
+Artefacts coming soon™
+
+### Platform Support
+All platforms should be supported for downstream usage - simply consume the common artefact
+regardless of your own targets.
+
+Scytale is tested on:
+- Kotlin/JVM
+- Kotlin/JS (browser and Node.js)
+- Kotlin/Wasm (browser and Node.js)
+
 ## Licensing
 
 Scytale is dual-licensed under [Apache 2.0](LICENSE-APACHE) and [MIT](LICENSE-MIT).
