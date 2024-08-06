@@ -27,11 +27,10 @@ kotlin {
         }
     }
 
-    // disable nodejs until 2.0.0-RC3 - https://youtrack.jetbrains.com/issue/KT-67785
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
          browser()
-//         nodejs()
+         nodejs()
     }
 
     sourceSets {
@@ -63,7 +62,7 @@ kotlin {
     }
 }
 
-// Enables the use of `backtick function names` in common/js/wasm tests - will be stable in 2.1
+// Enables the use of `backtick function names` in common/js/wasm tests - will be stable in Kotlin 2.1
 private fun KotlinCompilationTask<*>.allowInvalidJsIdentifiers() {
     compilerOptions.freeCompilerArgs.add("-XXLanguage:+JsAllowInvalidCharsIdentifiersEscaping")
 }
@@ -79,7 +78,7 @@ rootProject.tasks.withType<KotlinNpmInstallTask> {
 }
 
 rootProject.the<NodeJsRootExtension>().apply {
-    version = "22.0.0"
+    version = "22.6.0"
 }
 
 tasks.withType<Jar> {
