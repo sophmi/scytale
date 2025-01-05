@@ -2,7 +2,6 @@ package rs.soph.scytale.whirlpool
 
 import kotlin.collections.map
 import kotlin.collections.withIndex
-import kotlin.js.JsName
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.text.hexToByteArray
@@ -22,7 +21,6 @@ import kotlin.text.hexToByteArray
 class NessieWhirlpoolTest {
 
 	@Test
-	@JsName("input_of_zeroes") // TODO will no longer need JsName after kotlin 2.1.0
 	fun `inputs of zeroes match`() {
 		for ((length, expected) in ZEROES_VECTORS.withIndex()) {
 			val digest = with(Whirlpool()) {
@@ -35,7 +33,6 @@ class NessieWhirlpoolTest {
 	}
 
 	@Test
-	@JsName("input_of_single_set_bit") // TODO will no longer need JsName after kotlin 2.1.0
 	fun `inputs containing a single set bit match`() {
 		for ((index, expected) in SET_BIT_VECTORS.withIndex()) {
 			val input = ByteArray(SINGLE_SET_BIT_INPUT_SIZE)

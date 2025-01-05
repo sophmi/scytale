@@ -1,13 +1,7 @@
-import gradle.kotlin.dsl.accessors._70187b50303d45f015b10021a04b2e2f.commonTest
-import gradle.kotlin.dsl.accessors._70187b50303d45f015b10021a04b2e2f.sourceSets
 import org.gradle.accessors.dm.LibrariesForLibs
-import org.gradle.kotlin.dsl.dependencies
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
-import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
 	kotlin("multiplatform")
@@ -38,7 +32,7 @@ kotlin {
 
 	sourceSets {
 		commonTest.dependencies {
-			implementation(kotlin("test"))
+			implementation(kotlin("test-common"))
 		}
 
 		jvmTest.dependencies {
@@ -59,29 +53,13 @@ kotlin {
 		}
 	}
 
-	@OptIn(ExperimentalKotlinGradlePluginApi::class)
 	compilerOptions {
 		freeCompilerArgs.add("-Xexpect-actual-classes")
 	}
 }
 
-// Enables the use of `backtick function names` in common/js/wasm tests - will be stable in Kotlin 2.1
-private fun KotlinCompilationTask<*>.allowInvalidJsIdentifiers() {
-	compilerOptions.freeCompilerArgs.add("-XXLanguage:+JsAllowInvalidCharsIdentifiersEscaping")
-}
-
-private val compileTestKotlinJs: Kotlin2JsCompile by tasks
-compileTestKotlinJs.allowInvalidJsIdentifiers()
-
-private val compileTestKotlinWasmJs: KotlinCompilationTask<*> by tasks
-compileTestKotlinWasmJs.allowInvalidJsIdentifiers()
-
-rootProject.tasks.withType<KotlinNpmInstallTask> {
-	args.add("--ignore-engines")
-}
-
 rootProject.the<NodeJsRootExtension>().apply {
-	version = "22.6.0"
+	version = "22.12.0"
 }
 
 tasks.withType<Jar> {

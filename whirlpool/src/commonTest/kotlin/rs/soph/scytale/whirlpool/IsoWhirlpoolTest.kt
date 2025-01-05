@@ -2,7 +2,6 @@ package rs.soph.scytale.whirlpool
 
 import kotlin.code
 import kotlin.collections.withIndex
-import kotlin.js.JsName
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.text.encodeToByteArray
@@ -24,7 +23,6 @@ class IsoWhirlpoolTest {
 	// attempting to print it or view it in a debugger may lead to sadness
 
 	@Test
-	@JsName("iso_inputs") // TODO will no longer need JsName after kotlin 2.1.0
 	fun `iso inputs match`() {
 		for ((index, vector) in ISO_VECTORS.withIndex()) {
 			val (input, expected) = vector
@@ -35,7 +33,6 @@ class IsoWhirlpoolTest {
 	}
 
 	@Test
-	@JsName("iso_inputs_as_bits") // TODO will no longer need JsName after kotlin 2.1.0
 	fun `iso inputs match when written bit by bit`() {
 		for ((index, vector) in ISO_VECTORS.withIndex()) {
 			val (input, expected) = vector
