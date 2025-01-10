@@ -33,6 +33,11 @@ During development: ```gradle check```.
 
 Before committing: ```gradle build```
 
+#### Dependency updates
+
+The [gradle versions plugin](https://github.com/ben-manes/gradle-versions-plugin) can be used to
+automatically identify stale dependencies, using `gradle dependencyUpdates` (or `gradle dU`).
+
 ### Licensing
 
 By making a contribution, you agree to dual-license that contribution under [Apache 2.0](LICENSE-APACHE)
