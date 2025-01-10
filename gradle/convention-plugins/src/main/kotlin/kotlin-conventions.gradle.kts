@@ -66,6 +66,11 @@ tasks.withType<Test>().configureEach {
 
 // JS task configuration
 
+rootProject.plugins.withType<YarnPlugin> {
+	// This isn't really a gradle file, but it's emitted as part of the build process at least
+	rootProject.the<YarnRootExtension>().lockFileDirectory = project.rootDir.resolve("gradle/kotlin-js-store")
+}
+
 allprojects {
 	project.plugins.withType<NodeJsPlugin> {
 		project.the<NodeJsEnvSpec>().version = "22.12.0" // latest LTS
