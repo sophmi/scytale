@@ -35,6 +35,11 @@ kotlin {
 		nodejs()
 	}
 
+	@OptIn(ExperimentalWasmDsl::class)
+	wasmWasi {
+		nodejs()
+	}
+
 	sourceSets {
 		commonTest.dependencies {
 			implementation(kotlin("test-common"))
@@ -55,6 +60,10 @@ kotlin {
 
 		wasmJsTest.dependencies {
 			implementation(kotlin("test-wasm-js"))
+		}
+
+		wasmWasiTest.dependencies {
+			implementation(kotlin("test-wasm-wasi"))
 		}
 	}
 
