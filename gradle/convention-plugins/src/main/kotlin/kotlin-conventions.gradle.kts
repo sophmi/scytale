@@ -1,5 +1,6 @@
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsPlugin
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
@@ -25,6 +26,8 @@ kotlin {
 			useJUnitPlatform()
 		}
 	}
+
+	registerNativeTargets()
 
 	@OptIn(ExperimentalWasmDsl::class)
 	wasmJs {
@@ -87,4 +90,32 @@ tasks.withType<Jar> {
 	from(rootDir.resolve("LICENSE-MIT")) {
 		into("META-INF")
 	}
+}
+
+/**
+ * Registers every 64-bit native target. 32-bit targets are intentionally unsupported.
+ */
+private fun KotlinMultiplatformExtension.registerNativeTargets() {
+	// Tier 1 targets (https://kotlinlang.org/docs/native-target-support.html#tier-1):
+	macosX64()
+	macosArm64()
+	iosSimulatorArm64()
+	iosX64()
+	iosArm64()
+
+	// Tier 2 targets (https://kotlinlang.org/docs/native-target-support.html#tier-2):
+	linuxX64()
+	linuxArm64()
+	watchosSimulatorArm64()
+	watchosX64()
+	watchosArm64()
+	tvosSimulatorArm64()
+	tvosX64()
+	tvosArm64()
+
+	// Tier 3 targets (https://kotlinlang.org/docs/native-target-support.html#tier-3):
+	androidNativeArm64()
+	androidNativeX64()
+	mingwX64()
+	watchosDeviceArm64()
 }
