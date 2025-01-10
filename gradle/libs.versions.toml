@@ -1,6 +1,7 @@
 [versions]
 junit = "5.11.4"
 kotlin = "2.1.0"
+kotlinter = "5.0.1"
 versions-plugin = "0.51.0"
 
 [libraries]
@@ -9,6 +10,7 @@ junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 
 # Gradle
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlinter-gradle-plugin = { module = "org.jmailen.kotlinter:org.jmailen.kotlinter.gradle.plugin", version.ref = "kotlinter" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

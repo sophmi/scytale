@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 
 plugins {
 	kotlin("multiplatform")
+	id("org.jmailen.kotlinter")
 }
 
 private val libs = the<LibrariesForLibs>() // workaround for https://github.com/gradle/gradle/issues/15383
