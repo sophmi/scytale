@@ -2,6 +2,8 @@
 
 package rs.soph.scytale.whirlpool
 
+import rs.soph.scytale.common.longFromBytes
+
 /**
  * Lookup tables containing the premultiplication of the linear diffusion layer `θ` with the
  * non-linear layer `γ`, i.e. the 8x8 circulant MDS matrix multiplied by the substitution box
@@ -62,12 +64,12 @@ internal object CirculantTables {
 			val v9 = v8 xor v1 // v8 + v1
 
 			val first = index(x, row = 0)
-			tables[first] = pack(v1, v1, v4, v1, v8, v5, v2, v9)
+			tables[first] = longFromBytes(v1, v1, v4, v1, v8, v5, v2, v9)
 
 			// shift elements by one for each row, e.g. [1, 1, 4, 1, 8, 5, 2, 9] -> [9, 1, 1, 4, 1, 8, 5, 2]
 			val last = first + Matrix.WIDTH - 1
 			for (row in first..<last) {
-				tables[row + 1] = (tables[row] ushr 8) or (tables[row] shl 56)
+				tables[row + 1] = (tables[row] shl 56) or (tables[row] ushr 8)
 			}
 		}
 	}
@@ -82,16 +84,5 @@ internal object CirculantTables {
 
 	private inline fun index(element: Int, row: Int): Int {
 		return element * Matrix.WIDTH + row
-	}
-
-	private fun pack(msb: Int, b6: Int, b5: Int, b4: Int, b3: Int, b2: Int, b1: Int, lsb: Int): Long {
-		return (msb.toLong() shl 56) or
-			(b6.toLong() shl 48) or
-			(b5.toLong() shl 40) or
-			(b4.toLong() shl 32) or
-			(b3.toLong() shl 24) or
-			(b2.toLong() shl 16) or
-			(b1.toLong() shl 8) or
-			lsb.toLong()
 	}
 }

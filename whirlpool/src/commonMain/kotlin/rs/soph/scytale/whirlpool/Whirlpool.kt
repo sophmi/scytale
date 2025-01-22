@@ -1,5 +1,6 @@
 package rs.soph.scytale.whirlpool
 
+import rs.soph.scytale.common.putLong
 import kotlin.collections.copyInto
 import kotlin.collections.fill
 import kotlin.collections.fold
@@ -176,7 +177,7 @@ public class Whirlpool {
 		buffer.fill(0, fromIndex = offset, toIndex = BLOCK_SIZE_BYTES - Long.SIZE_BYTES)
 
 		// apply Merkle–Damgård strengthening
-		plaintextBits.unpackInto(buffer, offset = BLOCK_SIZE_BYTES - Long.SIZE_BYTES)
+		buffer.putLong(BLOCK_SIZE_BYTES - Long.SIZE_BYTES, plaintextBits)
 		encipherBuffer()
 
 		return hash.copyInto(digest)
@@ -212,7 +213,7 @@ public class Whirlpool {
 			// compute the current round key (i.e. the current round of the key schedule) from K^(r-1)
 			// pass k=0 and perform σ[c^r] below instead, otherwise we have to branch (to apply rc on one row only)
 			im.set { row -> round(row, key, 0) }
-			im.copyInto(key, endIndex = Matrix.WIDTH)
+			im.copyInto(key)
 
 			// perform the final step of K^r = ρ[c^r](K^{r-1}): σ[c^r](key)
 			// only key[0] needs to be set as the round constants for all other rows would be 0
@@ -220,7 +221,7 @@ public class Whirlpool {
 
 			// apply ρ[K^r]
 			im.set { row -> round(row, state, key[row]) }
-			im.copyInto(state, endIndex = Matrix.WIDTH)
+			im.copyInto(state)
 		}
 
 		// apply the Miyaguchi-Preneel compression function
@@ -297,15 +298,4 @@ public class Whirlpool {
 			return hash(input.encodeToByteArray())
 		}
 	}
-}
-
-private fun Long.unpackInto(bytes: ByteArray, offset: Int) {
-	bytes[offset] = (this ushr 56).toByte()
-	bytes[offset + 1] = (this ushr 48).toByte()
-	bytes[offset + 2] = (this ushr 40).toByte()
-	bytes[offset + 3] = (this ushr 32).toByte()
-	bytes[offset + 4] = (this ushr 24).toByte()
-	bytes[offset + 5] = (this ushr 16).toByte()
-	bytes[offset + 6] = (this ushr 8).toByte()
-	bytes[offset + 7] = this.toByte()
 }
