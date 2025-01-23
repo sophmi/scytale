@@ -3,6 +3,29 @@
 package rs.soph.scytale.common
 
 /**
+ * Returns four bytes as an `Int`, in big-endian order.
+ * @param offset The index of the most-significant byte of the `Int`.
+ */
+public inline fun ByteArray.getInt(offset: Int = 0): Int {
+	return this[offset].toInt() shl 24 or
+		(this[offset + 1].toInt() and 0xFF shl 16) or
+		(this[offset + 2].toInt() and 0xFF shl 8) or
+		(this[offset + 3].toInt() and 0xFF)
+}
+
+/**
+ * Writes an `Int` to this [ByteArray], in big-endian order.
+ * @param offset The index to write the first byte to.
+ * @param value The `Int` to write.
+ */
+public inline fun ByteArray.putInt(offset: Int, value: Int) {
+	this[offset] = (value ushr 24).toByte()
+	this[offset + 1] = (value ushr 16).toByte()
+	this[offset + 2] = (value ushr 8).toByte()
+	this[offset + 3] = value.toByte()
+}
+
+/**
  * Returns eight bytes as a `Long`, in big-endian order.
  * @param offset The index of the most-significant byte of the `Long`.
  */
