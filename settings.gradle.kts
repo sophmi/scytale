@@ -19,4 +19,5 @@ rootProject.name = "scytale"
 include(
 	":common",
 	":whirlpool",
+	":xtea",
 )
