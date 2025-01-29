@@ -1,5 +1,5 @@
 plugins {
-	alias(libs.plugins.versions.plugin)
+	alias(libs.plugins.versions)
 }
 
 tasks.dependencyUpdates {
