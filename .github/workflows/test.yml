@@ -32,5 +32,10 @@ jobs:
         with:
           gradle-version: current
 
-      - name: Build with Gradle
-        run: gradle build
+      - uses: burrunan/gradle-cache-action@c15634bb25b7284dc084f38dff4e838048b7feaf
+        name: Build
+        with:
+          gradle-build-scan-report: false
+          job-id: jdk21
+          arguments: build
+          gradle-version: current
