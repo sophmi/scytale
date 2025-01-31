@@ -1,10 +1,10 @@
 package rs.soph.scytale.whirlpool
 
+import rs.soph.scytale.common.hexToBytes
 import kotlin.collections.map
 import kotlin.collections.withIndex
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
-import kotlin.text.hexToByteArray
 
 /**
  * Tests the [Whirlpool] hash function using the "nessie test vectors", an updated version of the
@@ -45,12 +45,11 @@ class NessieWhirlpoolTest {
 		}
 	}
 
-	@OptIn(ExperimentalStdlibApi::class)
 	private companion object {
 
 		private const val SINGLE_SET_BIT_INPUT_SIZE = 512 / Byte.SIZE_BITS
 
-		private val ZEROES_VECTORS = NessieTestVectors.ZEROES.map(String::hexToByteArray)
-		private val SET_BIT_VECTORS = NessieTestVectors.SET_BIT.map(String::hexToByteArray)
+		private val ZEROES_VECTORS = NessieTestVectors.ZEROES.map(String::hexToBytes)
+		private val SET_BIT_VECTORS = NessieTestVectors.SET_BIT.map(String::hexToBytes)
 	}
 }

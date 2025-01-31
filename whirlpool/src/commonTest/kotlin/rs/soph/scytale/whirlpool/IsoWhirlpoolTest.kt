@@ -1,13 +1,11 @@
 package rs.soph.scytale.whirlpool
 
+import rs.soph.scytale.common.hexToBytes
 import kotlin.code
 import kotlin.collections.withIndex
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.text.encodeToByteArray
-import kotlin.text.filterNot
-import kotlin.text.hexToByteArray
-import kotlin.text.isWhitespace
 import kotlin.text.repeat
 import kotlin.to
 
@@ -50,12 +48,6 @@ class IsoWhirlpoolTest {
 	}
 
 	private companion object {
-
-		@OptIn(ExperimentalStdlibApi::class)
-		private fun String.hexToBytes(): ByteArray {
-			return filterNot(Char::isWhitespace)
-				.hexToByteArray(HexFormat.UpperCase)
-		}
 
 		private val ISO_VECTORS = listOf(
 			"" to """
