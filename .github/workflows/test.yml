@@ -39,3 +39,10 @@ jobs:
           job-id: jdk21
           arguments: build
           gradle-version: current
+
+      - name: Collect Tests Result
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: tests-result
+          path: ${{ github.workspace }}/**/build/reports/tests
