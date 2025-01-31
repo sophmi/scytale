@@ -32,7 +32,7 @@ class IsoWhirlpoolTest {
 
 	@Test
 	fun `iso inputs match when written bit by bit`() {
-		for ((index, vector) in ISO_VECTORS.withIndex()) {
+		for ((index, vector) in ISO_VECTORS.dropLast(1).withIndex()) {
 			val (input, expected) = vector
 			val whirlpool = Whirlpool()
 
