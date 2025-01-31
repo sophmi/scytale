@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsPlugin
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
+import java.time.Duration
 
 plugins {
 	kotlin("multiplatform")
@@ -18,7 +19,14 @@ kotlin {
 	explicitApi()
 
 	js(IR) {
-		browser()
+		browser {
+			testTask {
+				useKarma {
+					useChromeHeadless()
+					timeout = Duration.ofSeconds(30)
+				}
+			}
+		}
 		nodejs()
 	}
 
@@ -32,7 +40,14 @@ kotlin {
 
 	@OptIn(ExperimentalWasmDsl::class)
 	wasmJs {
-		browser()
+		browser {
+			testTask {
+				useKarma {
+					useChromeHeadless()
+					timeout = Duration.ofSeconds(30)
+				}
+			}
+		}
 		nodejs()
 	}
 
