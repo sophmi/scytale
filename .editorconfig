@@ -10,6 +10,7 @@ indent_style = tab
 # noinspection EditorConfigKeyCorrectness
 [*.{kt,kts}]
 ktlint_code_style = intellij_idea
+ktlint_standard_comment-wrapping = disabled # Allow block comments inside parameter lists, e.g. func(/* thing = */ true)
 ktlint_standard_function-expression-body = disabled
 
 [*.md]
