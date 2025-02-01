@@ -4,6 +4,9 @@
 
 # Gradle
 build
+gradle/wrapper/
+gradlew
+gradlew.bat
 local.properties
 
 # JVM
