@@ -1,23 +1,11 @@
 # Scytale
 
-Kotlin Multiplatform implementations of uncommon or legacy cryptographic functions. All platforms
-are supported (although not all are tested - see [Platform Support](#platform-support)).
+Kotlin Multiplatform implementations of legacy cryptographic functions. All platforms are supported
+(although not all are tested - see [Platform Support](#platform-support)).
 
-Security is explicitly a non-goal (see [Security](#security)); implementations prioritise 
-correctness and intelligibility.
-
-## Security
-
-Scytale's intended use is for integration with existing applications and formats that utilise
-legacy cryptographic functions and have few security needs (e.g. for interacting with a proprietary
-file store that uses Whirlpool as a checksum).
-
-Scytale does not contain modern state-of-the-art cryptographic functions and should **not** be used
-in place of audited libraries maintained by experts. Consequently, security is not a primary goal; 
-algorithms and implementations may be vulnerable to side-channel attacks, significantly less secure
-than modern alternatives, or cryptographically broken outright.
-
-Ensure your use case does not require greater security guarantees than this library provides.
+⚠️ Scytale is **not** a secure, general-purpose cryptographic library: it's designed for
+intergrating with legacy formats that utilise outdated cryptography (e.g. a file store that uses
+Whirlpool as a checksum). See [Security](#security) for more information.
 
 ## Users
 
@@ -32,11 +20,19 @@ Scytale is tested on:
 - Kotlin/JS (browser and Node.js)
 - Kotlin/Wasm (browser and Node.js)
 
+## Security
+
+Scytale does not contain state-of-the-art cryptographic functions and should **not** be used in
+place of audited libraries maintained by experts. Consequently, algorithms and/or implementations
+may be vulnerable to side-channel attacks, significantly less secure than modern alternatives, or
+cryptographically broken outright.
+
+If your use case requires any level of security, this library is inappropriate.
+
 ## Contributing
-Scytale is not a general-purpose Kotlin Multiplatform cryptography library. Before contributing a
-new implementation, please open an issue to verify that the algorithm will be accepted - in 
-particular, it must not be a modern one that users could reasonably assume would use a
-cryptographically-secure implementation (e.g. ECDHE, AES-GCM).
+Before proposing a new implementation, please open an issue to check that the algorithm will be
+accepted - in particular, it must not be a modern one that users could reasonably assume would be
+cryptographically-secure (e.g. ECDHE, AES-GCM).
 
 See the [contribution guidelines](CONTRIBUTING.md) for further information.
 

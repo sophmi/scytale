@@ -14,11 +14,6 @@ import kotlin.text.encodeToByteArray
  * This implementation slightly diverges from WHIRLPOOL by limiting the maximum size of the input
  * to `2^64 - 1` bits (~2.1 million terabytes). This should still be sufficient for casual usage.
  *
- * Do not reuse the block cipher implementation as part of any encryption implementation - although
- * this implementation dose use lookup tables throughout, constant-time operations are not of
- * significant importance for hash functions (and would be essentially impossible to guarantee in
- * KMP), and no effort was made to ensure the implementation is suitable for any other use.
- *
  * ## The WHIRLPOOL hashing algorithm
  * WHIRLPOOL was developed by Paulo S. L. M. Barreto and Vincent Rijmen and originally presented at
  * the first NESSIE workshop in 2000 (see 'The WHIRLPOOL hashing function', archived at
