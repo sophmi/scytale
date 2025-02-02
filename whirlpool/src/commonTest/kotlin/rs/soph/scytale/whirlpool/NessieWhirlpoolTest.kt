@@ -33,9 +33,9 @@ class NessieWhirlpoolTest {
 	}
 
 	@Test
-	fun `inputs containing a single set bit match`() {
+	fun `single set bit inputs match`() {
 		for ((index, expected) in SET_BIT_VECTORS.withIndex()) {
-			val input = ByteArray(SINGLE_SET_BIT_INPUT_SIZE)
+			val input = ByteArray(Whirlpool.DIGEST_SIZE_BYTES)
 			val byte = index / Byte.SIZE_BITS
 			val bit = index % Byte.SIZE_BITS
 			input[byte] = (0x80 ushr bit).toByte()
@@ -46,8 +46,6 @@ class NessieWhirlpoolTest {
 	}
 
 	private companion object {
-
-		private const val SINGLE_SET_BIT_INPUT_SIZE = 512 / Byte.SIZE_BITS
 
 		private val ZEROES_VECTORS = NessieTestVectors.ZEROES.map(String::hexToBytes)
 		private val SET_BIT_VECTORS = NessieTestVectors.SET_BIT.map(String::hexToBytes)

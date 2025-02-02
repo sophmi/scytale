@@ -16,14 +16,13 @@ import rs.soph.scytale.common.longFromBytes
  */
 internal object CirculantTables {
 
-	/** Size of the 2^8 Galois field, or the number of possible values in one byte. */
+	/** Size of the 2^8 Galois field (i.e. the number of distinct values one byte can represent). */
 	private const val FIELD_SIZE = 1 shl Byte.SIZE_BITS
 
 	/**
 	 * Premultiplied matrices flattened in the form `[x * Matrix.WIDTH + row]` (i.e. indexing gives
-	 * the `row`th row of the matrix for a value `x`), where `0 <= x < 256` and `0 <= row < 8`.
-	 * Each long is a row in the relevant matrix where the first byte is the element `[row, 0]`, the
-	 * second byte is `[row, 1]`, etc.
+	 * the `row`th row of the matrix for an input byte `x`), where `0 <= x < 256` and `0 <= row < 8`.
+	 * Each row is a long where the first byte is the element `[row, 0]`, the second byte is `[row, 1]`, etc.
 	 */
 	private val tables = LongArray(Matrix.WIDTH * FIELD_SIZE)
 
@@ -53,7 +52,7 @@ internal object CirculantTables {
 	private const val FIELD_REDUCTION: Int = 0x11D
 
 	init {
-		// Premultiply two functions: the linear diffusion layer θ(x) and the non-linear layer γ(x):
+		// Premultiply the linear diffusion layer θ(x) and the non-linear layer γ(x):
 		// S_BOX[x] * cir(1, 1, 4, 1, 8, 5, 2, 9)
 		repeat(FIELD_SIZE) { x ->
 			val v1 = S_BOX[x].toInt()
@@ -66,7 +65,7 @@ internal object CirculantTables {
 			val first = index(x, row = 0)
 			tables[first] = longFromBytes(v1, v1, v4, v1, v8, v5, v2, v9)
 
-			// shift elements by one for each row, e.g. [1, 1, 4, 1, 8, 5, 2, 9] -> [9, 1, 1, 4, 1, 8, 5, 2]
+			// Circularly rotate each row, e.g. [1, 1, 4, 1, 8, 5, 2, 9] -> [9, 1, 1, 4, 1, 8, 5, 2]
 			val last = first + Matrix.WIDTH - 1
 			for (row in first..<last) {
 				tables[row + 1] = (tables[row] shl 56) or (tables[row] ushr 8)
@@ -75,7 +74,9 @@ internal object CirculantTables {
 	}
 
 	/**
-	 * @param element The element in the field `GF(2^8)`, i.e. the input byte.
+	 * Maps an input byte to its diffused counterpart, to mix the bits in the input.
+	 *
+	 * @param element The element in the field `GF(2^8)`, i.e. the input byte. Must be `[0, 255]`.
 	 * @param row The row in the matrix to get.
 	 */
 	inline operator fun get(element: Int, row: Int): Long {

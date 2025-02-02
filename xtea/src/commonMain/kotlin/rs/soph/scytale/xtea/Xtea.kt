@@ -7,12 +7,14 @@ import kotlin.jvm.JvmOverloads
 /**
  * The XTEA block cipher, a lightweight Feistel cipher with a 128-bit key.
  *
- * Functions in this class are thread-safe.
+ * ### Thread safety
+ * All functions in this class support safe concurrent access.
  *
- * ## The XTEA (eXtended TEA) block cipher
+ * #### The XTEA (eXtended TEA) block cipher
  * XTEA was developed by David Wheeler and Roger Needham as an extension to their earlier block
- * cipher TEA (Tiny Encryption Algorithm). XTEA was first presented in an (unpublished) paper in
- * 1997 (see 'Tea extensions', archived at
+ * cipher TEA (see 'TEA, a Tiny Encryption Algorithm', archived at
+ * [archive.org](https://web.archive.org/web/20240522143340/https://www.cix.co.uk/~klockstone/tea.pdf)).
+ * XTEA was first released in an (unpublished) paper in 1997 (see 'Tea extensions', archived at
  * [archive.org](https://web.archive.org/web/20241215001824/https://www.cix.co.uk/~klockstone/xtea.pdf)).
  */
 public object Xtea {
@@ -20,9 +22,8 @@ public object Xtea {
 	/**
 	 * Enciphers the input [ByteArray] in-place using the given [key].
 	 *
-	 * XTEA uses a 64-bit block size and so the input must be a multiple of 8 bytes, i.e.:
-	 * - `(length - offset) >= 8`.
-	 * - `(length - offset) % 8 == 0`.
+	 * XTEA uses a 64-bit block size and so the input must be a multiple of 8 bytes, i.e.
+	 * `(length - offset) % 8 == 0 && length > offset`.
 	 *
 	 * Blocks are read and written in big-endian order.
 	 *

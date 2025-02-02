@@ -9,12 +9,17 @@ import kotlin.math.min
 import kotlin.text.encodeToByteArray
 
 /**
- * A Kotlin implementation of the WHIRLPOOL hashing function (version 3.0).
+ * The WHIRLPOOL hash function (version 3.0), a cryptographic hash function with a 512-bit digest.
  *
  * This implementation slightly diverges from WHIRLPOOL by limiting the maximum size of the input
  * to `2^64 - 1` bits (~2.1 million terabytes). This should still be sufficient for casual usage.
  *
- * ## The WHIRLPOOL hashing algorithm
+ * ### Thread safety
+ * This implementation does **not** support safe concurrent access: any multithreaded usage of a
+ * [Whirlpool] instance must be synchronized externally. However, the accompanying utility
+ * functions, such as [Whirlpool.hash], may be invoked concurrently.
+ *
+ * #### The WHIRLPOOL hashing algorithm
  * WHIRLPOOL was developed by Paulo S. L. M. Barreto and Vincent Rijmen and originally presented at
  * the first NESSIE workshop in 2000 (see 'The WHIRLPOOL hashing function', archived at
  * [archive.org](https://web.archive.org/web/20060621195406/http://www.cosic.esat.kuleuven.ac.be/nessie/workshop/submissions/whirlpool.zip)).
@@ -62,7 +67,7 @@ public class Whirlpool {
 	 *
 	 * To hash an arbitrary amount of _bits_, use [addBits].
 	 *
-	 * @param input The plaintext data to hash.
+	 * @param input The plaintext data to hash. Will not be modified.
 	 */
 	public fun add(input: ByteArray) {
 		val bits = input.size.toLong() * Byte.SIZE_BITS
@@ -94,7 +99,7 @@ public class Whirlpool {
 	 * Applies the block cipher to [input]. If a hash has already been produced from this Whirlpool instance (i.e.
 	 * [finish] has been called), [reset] **must be called** before adding data again.
 	 *
-	 * @param input The plaintext data to hash.
+	 * @param input The plaintext data to hash. Will not be modified.
 	 * @param bits The amount of plaintext bits to process.
 	 */
 	public fun addBits(input: ByteArray, bits: Long) { // Partially derived from (public domain) reference impl
@@ -150,12 +155,14 @@ public class Whirlpool {
 	}
 
 	/**
-	 * Completes the application of the WHIRLPOOL hash function and returns the resulting digest.
+	 * Completes the application of the WHIRLPOOL hash function and returns the digest.
 	 *
 	 * Users **must** call [reset] after this function if this [Whirlpool] instance will be reused.
+	 *
+	 * @param digest The [ByteArray] to write the digest to. Must be at least 64 bytes.
 	 */
 	@JvmOverloads
-	public fun finish(digest: ByteArray = ByteArray(DIGEST_BYTES)): ByteArray {
+	public fun finish(digest: ByteArray = ByteArray(DIGEST_SIZE_BYTES)): ByteArray {
 		// unconditionally pad with a 1-bit; every bit after this will be 0 (except for the message length at the end)
 		buffer[offset] = (buffer[offset].toInt() or (0x80 ushr (bitOffset and 7))).toByte()
 
@@ -166,9 +173,9 @@ public class Whirlpool {
 			offset = 0
 		}
 
-		// message length is 32 bytes, so pad to 32 to reach the block size.
-		// (implementation-specific: also need to overwrite all but the last 8 bytes as that contains data from the
-		// previous block - the final 8 are overwritten with the plaintext length below)
+		// message length is 32 bytes, so pad to 32 to reach the block size
+		// (implementation-specific: due to the plaintext size limit, also need to overwrite all but the last 8 bytes,
+		// as that contains data from the previous block - the final 8 are overwritten with the plaintext length below)
 		buffer.fill(0, fromIndex = offset, toIndex = BLOCK_SIZE_BYTES - Long.SIZE_BYTES)
 
 		// apply Merkle–Damgård strengthening
@@ -178,7 +185,7 @@ public class Whirlpool {
 		return hash.copyInto(digest)
 	}
 
-	/** Re-initialize the hashing state. */
+	/** Re-initializes the hashing state. */
 	public fun reset() {
 		plaintextBits = 0
 		hash.clear()
@@ -197,11 +204,11 @@ public class Whirlpool {
 	}
 
 	/**
-	 * Apply the block cipher W to the current [block].
+	 * Applies the block cipher W to the current [block].
 	 */
 	private fun cipher() {
 		hash.copyInto(key)
-		state.set { block[it] xor key[it] } // σ[K^0]
+		state.set { row -> block[row] xor key[row] } // σ[K^0]
 
 		// compute K^r and ρ[K^r] for 1 <= r <= 10
 		for (r in 1..ROUNDS) {
@@ -211,7 +218,7 @@ public class Whirlpool {
 			im.copyInto(key)
 
 			// perform the final step of K^r = ρ[c^r](K^{r-1}): σ[c^r](key)
-			// only key[0] needs to be set as the round constants for all other rows would be 0
+			// only key[0] needs to be set as for all other rows, the round constant c^r = 0
 			key[0] = key[0] xor ROUND_CONSTANTS[r]
 
 			// apply ρ[K^r]
@@ -238,10 +245,10 @@ public class Whirlpool {
 	public companion object {
 
 		/** Number of **bits** used by a WHIRLPOOL digest. */
-		public const val DIGEST_BITS: Int = 64 * Byte.SIZE_BITS
+		public const val DIGEST_SIZE_BITS: Int = 64 * Byte.SIZE_BITS
 
 		/** Number of **bytes** used by a WHIRLPOOL digest. */
-		public const val DIGEST_BYTES: Int = 64 * Byte.SIZE_BYTES
+		public const val DIGEST_SIZE_BYTES: Int = 64 * Byte.SIZE_BYTES
 
 		/** Number of **bits** the block cipher is applied to at once. */
 		private const val BLOCK_SIZE_BITS: Int = Matrix.WIDTH * Matrix.WIDTH * Byte.SIZE_BITS // 512
@@ -277,6 +284,8 @@ public class Whirlpool {
 
 		/**
 		 * Applies the WHIRLPOOL hash function to the [data].
+		 *
+		 * @param data The data to hash. Will not be modified.
 		 */
 		public fun hash(data: ByteArray): ByteArray {
 			return with(Whirlpool()) {
@@ -288,6 +297,8 @@ public class Whirlpool {
 
 		/**
 		 * Applies the WHIRLPOOL hash function to the [input] String, treating it as UTF-8.
+		 *
+		 * @param input The plaintext to hash.
 		 */
 		public fun hashUtf8(input: String): ByteArray {
 			return hash(input.encodeToByteArray())
