@@ -5,29 +5,27 @@ import kotlin.code
 import kotlin.collections.withIndex
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
-import kotlin.text.encodeToByteArray
 import kotlin.text.repeat
 import kotlin.to
 
 /**
  * Tests the [Whirlpool] hash function using the test vectors provided as part of ISO/IEC 10118-3:2004.
  *
- * The vectors themselves are included with the reference implementation available at
+ * The vectors are included with the reference implementation available at
  * [archive.org](https://web.archive.org/web/20171129084214/http://www.larc.usp.br/%7Epbarreto/whirlpool.zip).
  */
 class IsoWhirlpoolTest {
-
-	// Warning: the final iso test vector is a million-character string;
-	// attempting to print it or view it in a debugger may lead to sadness
 
 	@Test
 	fun `iso inputs match`() {
 		for ((index, vector) in ISO_VECTORS.withIndex()) {
 			val (input, expected) = vector
-			val actual = Whirlpool.hash(input.encodeToByteArray())
+			val actual = Whirlpool.hashUtf8(input)
 
 			assertContentEquals(expected, actual, "Input $index failed to match")
 		}
+
+		testOneMillionA(Whirlpool::add)
 	}
 
 	@Test
@@ -39,12 +37,29 @@ class IsoWhirlpoolTest {
 			val byte = ByteArray(1)
 			for (b in input) {
 				byte[0] = b.code.toByte()
-				whirlpool.addBits(byte, Byte.SIZE_BITS.toLong())
+				whirlpool.addBits(byte)
 			}
 
 			val actual = whirlpool.finish()
 			assertContentEquals(expected, actual, "Input $index failed to match")
 		}
+
+		testOneMillionA(Whirlpool::addBits)
+	}
+
+	/** Tests the final ISO vector, the character 'a' repeated one million times. */
+	private fun testOneMillionA(adder: Whirlpool.(ByteArray) -> Unit) {
+		// avoid generating a million-character string
+		val a = ByteArray(1000) { 'a'.code.toByte() }
+		val digest = with(Whirlpool()) {
+			repeat(1000) {
+				adder(a)
+			}
+
+			finish()
+		}
+
+		assertContentEquals(MILLION_A_VECTOR, digest, "Input of one million 'a's failed to match")
 	}
 
 	private companion object {
@@ -89,11 +104,11 @@ class IsoWhirlpoolTest {
 				 2A987EA40F917061 F5D6F0A0E4644F48 8A7A5A52DEEE6562 07C562F988E95C69
 				 16BDC8031BC5BE1B 7B947639FE050B56 939BAAA0ADFF9AE6 745B7B181C3BE3FD
 			""".hexToBytes(),
+		)
 
-			"a".repeat(1_000_000) to """
+		private val MILLION_A_VECTOR = """
 				 0C99005BEB57EFF5 0A7CF005560DDF5D 29057FD86B20BFD6 2DECA0F1CCEA4AF5
 				 1FC15490EDDC47AF 32BB2B66C34FF9AD 8C6008AD677F7712 6953B226E4ED8B01
-			""".hexToBytes(),
-		)
+			""".hexToBytes()
 	}
 }
