@@ -165,11 +165,15 @@ public class Whirlpool {
 	/**
 	 * Completes the application of the WHIRLPOOL hash function and returns the digest.
 	 *
+	 * The internal hash state is cleared prior to returning the digest.
+	 *
 	 * @param digest The [ByteArray] to write the digest to. Must be at least 64 bytes.
+	 * @param offset The offset into [digest] to begin writing at. Must be `[0, digest.size - 64]`.
 	 */
 	@JvmOverloads
 	public fun finish(digest: ByteArray = ByteArray(DIGEST_SIZE_BYTES), offset: Int = 0): ByteArray {
 		try {
+			@OptIn(DelicateWhirlpoolApi::class)
 			finishLazy(digest, offset)
 		} finally {
 			reset()
@@ -179,13 +183,36 @@ public class Whirlpool {
 	}
 
 	/**
-	 * Completes the application of the WHIRLPOOL hash function and returns the digest. Unlike the
-	 * safer [finish] function, this does not clear or reset the internal cipher state.
+	 * Clears the internal hash state.
 	 *
-	 * Users **must** call [reset] after this function if this [Whirlpool] instance will be reused.
+	 * Note that this does not guarantee the input no longer exists in memory, due to runtime
+	 * implementation details such as the garbage collector.
+	 */
+	public fun reset() {
+		buffer.fill(0)
+		block.clear()
+		hash.clear()
+		key.clear()
+		im.clear()
+		state.clear()
+
+		plaintextBits = 0
+		bitOffset = 0
+		offset = 0
+	}
+
+	/**
+	 * Completes the application of the WHIRLPOOL hash function and returns the digest. Unlike the
+	 * safer [finish] function, this does not clear the internal cipher state.
+	 *
+	 * ### Delicate API
+	 * This function does not clear any internal state. If this [Whirlpool] instance will be reused,
+	 * [reset] or [resetLazy] **must** be called prior to feeding any additional data.
 	 *
 	 * @param digest The [ByteArray] to write the digest to. Must be at least 64 bytes.
+	 * @param digestOffset The offset into [digest] to begin writing at. Must be `[0, digest.size - 64]`.
 	 */
+	@DelicateWhirlpoolApi
 	public fun finishLazy(digest: ByteArray, digestOffset: Int = 0): ByteArray {
 		// unconditionally pad with a 1-bit; every bit after this will be 0 (except for the message length at the end)
 		buffer[offset] = (buffer[offset].toInt() or (0x80 ushr (bitOffset and 7))).toByte()
@@ -210,22 +237,19 @@ public class Whirlpool {
 	}
 
 	/**
-	 * Clears the internal hash state.
+	 * Re-initializes the hashing state.
 	 *
-	 * Note that this does not guarantee the input no longer exists in memory, due to runtime
-	 * implementation details such as the garbage collector.
+	 * ### Delicate API
+	 * This function clears only the minimum amount necessary to reuse this instance - input and
+	 * internal state from the prior use will remain until sufficient data is written.
 	 */
-	public fun reset() {
-		buffer.fill(0)
-		block.clear()
+	@DelicateWhirlpoolApi
+	public fun resetLazy() {
 		hash.clear()
-		key.clear()
-		im.clear()
-		state.clear()
-
 		plaintextBits = 0
 		bitOffset = 0
 		offset = 0
+		buffer[0] = 0 // only need to clear buffer[0]; all subsequent bytes are overwritten anyway
 	}
 
 	/**
