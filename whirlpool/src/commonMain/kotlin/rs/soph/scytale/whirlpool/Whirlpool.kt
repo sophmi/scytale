@@ -96,19 +96,35 @@ public class Whirlpool {
 	}
 
 	/**
-	 * Applies the block cipher to [input]. If a hash has already been produced from this Whirlpool instance (i.e.
-	 * [finish] has been called), [reset] **must be called** before adding data again.
+	 * Feeds [count] bits of [input] into the block cipher.
 	 *
-	 * @param input The plaintext data to hash. Will not be modified.
-	 * @param bits The amount of plaintext bits to process.
+	 * If a hash has already been produced from this Whirlpool instance (i.e. [finish] has been called), [reset]
+	 * **must** be called before adding data again.
+	 *
+	 * @param input The data to hash. Will not be modified.
+	 * @param count The number of bits to add.
 	 */
-	public fun addBits(input: ByteArray, bits: Long) { // Partially derived from (public domain) reference impl
-		plaintextBits += bits
+	public fun addBits(input: ByteArray, count: Int) {
+		return addBits(input, count.toLong())
+	}
 
-		val ignored = (Byte.SIZE_BITS - (bits and 7).toInt()) and 7 // amount of bits in input[off] we aren't reading
+	/**
+	 * Feeds [count] bits of [input] into the block cipher.
+	 *
+	 * If a hash has already been produced from this Whirlpool instance (i.e. [finish] has been called), [reset]
+	 * **must** be called before adding data again.
+	 *
+	 * @param input The data to hash. Will not be modified.
+	 * @param count The number of bits to add.
+	 */
+	@JvmOverloads
+	public fun addBits(input: ByteArray, count: Long = input.size.toLong() * Byte.SIZE_BITS) {
+		plaintextBits += count
+
+		val ignored = (Byte.SIZE_BITS - (count and 7).toInt()) and 7 // amount of bits in input[off] we aren't reading
 		val usedOut = bitOffset and 7 // amount of bits in buffer[offset] that we've already written
 		val freeOut = Byte.SIZE_BITS - usedOut
-		var remainingInput = bits
+		var remainingInput = count
 		var pos = 0
 
 		var b: Int
