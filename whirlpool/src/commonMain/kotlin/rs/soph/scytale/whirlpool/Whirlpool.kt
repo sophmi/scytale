@@ -61,16 +61,14 @@ public class Whirlpool {
 	private var state = Matrix()
 
 	/**
-	 * Applies the block cipher to [input]. If a hash has already been produced from this Whirlpool
-	 * instance (i.e. [finish] has been called), [reset] **must** be called before adding data
-	 * again.
+	 * Feeds [count] bytes of [input] into the block cipher.
 	 *
 	 * To hash an arbitrary amount of _bits_, use [addBits].
 	 *
-	 * @param input The plaintext data to hash. Will not be modified.
+	 * @param input The data to hash. Will not be modified.
 	 */
-	public fun add(input: ByteArray) {
-		val bits = input.size.toLong() * Byte.SIZE_BITS
+	public fun add(input: ByteArray, count: Int = input.size) {
+		val bits = count.toLong() * Byte.SIZE_BITS
 
 		if (bitOffset % Byte.SIZE_BITS != 0) {
 			addBits(input, bits)
@@ -98,9 +96,6 @@ public class Whirlpool {
 	/**
 	 * Feeds [count] bits of [input] into the block cipher.
 	 *
-	 * If a hash has already been produced from this Whirlpool instance (i.e. [finish] has been called), [reset]
-	 * **must** be called before adding data again.
-	 *
 	 * @param input The data to hash. Will not be modified.
 	 * @param count The number of bits to add.
 	 */
@@ -110,9 +105,6 @@ public class Whirlpool {
 
 	/**
 	 * Feeds [count] bits of [input] into the block cipher.
-	 *
-	 * If a hash has already been produced from this Whirlpool instance (i.e. [finish] has been called), [reset]
-	 * **must** be called before adding data again.
 	 *
 	 * @param input The data to hash. Will not be modified.
 	 * @param count The number of bits to add.
@@ -173,12 +165,28 @@ public class Whirlpool {
 	/**
 	 * Completes the application of the WHIRLPOOL hash function and returns the digest.
 	 *
+	 * @param digest The [ByteArray] to write the digest to. Must be at least 64 bytes.
+	 */
+	@JvmOverloads
+	public fun finish(digest: ByteArray = ByteArray(DIGEST_SIZE_BYTES), offset: Int = 0): ByteArray {
+		try {
+			finishLazy(digest, offset)
+		} finally {
+			reset()
+		}
+
+		return digest
+	}
+
+	/**
+	 * Completes the application of the WHIRLPOOL hash function and returns the digest. Unlike the
+	 * safer [finish] function, this does not clear or reset the internal cipher state.
+	 *
 	 * Users **must** call [reset] after this function if this [Whirlpool] instance will be reused.
 	 *
 	 * @param digest The [ByteArray] to write the digest to. Must be at least 64 bytes.
 	 */
-	@JvmOverloads
-	public fun finish(digest: ByteArray = ByteArray(DIGEST_SIZE_BYTES)): ByteArray {
+	public fun finishLazy(digest: ByteArray, digestOffset: Int = 0): ByteArray {
 		// unconditionally pad with a 1-bit; every bit after this will be 0 (except for the message length at the end)
 		buffer[offset] = (buffer[offset].toInt() or (0x80 ushr (bitOffset and 7))).toByte()
 
@@ -198,16 +206,26 @@ public class Whirlpool {
 		buffer.putLong(BLOCK_SIZE_BYTES - Long.SIZE_BYTES, plaintextBits)
 		encipherBuffer()
 
-		return hash.copyInto(digest)
+		return hash.copyInto(digest, digestOffset)
 	}
 
-	/** Re-initializes the hashing state. */
+	/**
+	 * Clears the internal hash state.
+	 *
+	 * Note that this does not guarantee the input no longer exists in memory, due to runtime
+	 * implementation details such as the garbage collector.
+	 */
 	public fun reset() {
-		plaintextBits = 0
+		buffer.fill(0)
+		block.clear()
 		hash.clear()
-		offset = 0
+		key.clear()
+		im.clear()
+		state.clear()
+
+		plaintextBits = 0
 		bitOffset = 0
-		buffer[0] = 0 // only need to clear buffer[0]; all subsequent bytes are overwritten anyway
+		offset = 0
 	}
 
 	/**
@@ -307,7 +325,6 @@ public class Whirlpool {
 			return with(Whirlpool()) {
 				add(data)
 				finish()
-				// no need to reset(), Whirlpool instance is discarded
 			}
 		}
 

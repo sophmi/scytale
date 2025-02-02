@@ -37,15 +37,15 @@ internal value class Matrix(private val data: LongArray = LongArray(WIDTH)) {
 		}
 	}
 
-	fun copyFrom(source: ByteArray) {
+	fun copyFrom(source: ByteArray, offset: Int = 0) {
 		repeat(WIDTH) { row ->
-			data[row] = source.getLong(row * Long.SIZE_BYTES)
+			data[row] = source.getLong(offset + row * Long.SIZE_BYTES)
 		}
 	}
 
-	fun copyInto(destination: ByteArray): ByteArray {
+	fun copyInto(destination: ByteArray, offset: Int = 0): ByteArray {
 		repeat(WIDTH) { row ->
-			destination.putLong(row * Long.SIZE_BYTES, data[row])
+			destination.putLong(offset + row * Long.SIZE_BYTES, data[row])
 		}
 
 		return destination
