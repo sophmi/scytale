@@ -233,12 +233,12 @@ public class Whirlpool {
 	/**
 	 * Applies the round function `ρ[k] = σ[k] ◦ θ ◦ π ◦ γ` to one row.
 	 *
-	 * Note that `θ ◦ γ` has been precomputed (see [CirculantTables]).
+	 * Note that `θ ◦ γ` has been precomputed (see [DiffusionTables]).
 	 */
 	private fun round(rowIndex: Int, key: Matrix, k: Long): Long {
 		return (0..<Matrix.WIDTH).fold(k) { acc, column ->
 			val element = key[rowIndex - column and 7, column] // apply the cyclical permutation π
-			acc xor tables[element, column] // σ[k] ◦ θ ◦ γ
+			acc xor diffusion[element, column] // σ[k] ◦ θ ◦ γ
 		}
 	}
 
@@ -266,19 +266,19 @@ public class Whirlpool {
 		private const val FINAL_BLOCK_DATA_SIZE_BYTES: Int = 256 / Byte.SIZE_BITS
 
 		/** Lookup tables for `θ ◦ γ`. */
-		private val tables = CirculantTables
+		private val diffusion = DiffusionTables
 
 		init {
 			for (r in 1..ROUNDS) {
 				val index = 8 * (r - 1)
-				ROUND_CONSTANTS[r] = (tables[index, 0] and (0xFFL shl 56)) xor
-					(tables[index + 1, 1] and (0xFFL shl 48)) xor
-					(tables[index + 2, 2] and (0xFFL shl 40)) xor
-					(tables[index + 3, 3] and (0xFFL shl 32)) xor
-					(tables[index + 4, 4] and (0xFFL shl 24)) xor
-					(tables[index + 5, 5] and (0xFFL shl 16)) xor
-					(tables[index + 6, 6] and (0xFFL shl 8)) xor
-					(tables[index + 7, 7] and 0xFFL)
+				ROUND_CONSTANTS[r] = (diffusion[index, 0] and (0xFFL shl 56)) xor
+					(diffusion[index + 1, 1] and (0xFFL shl 48)) xor
+					(diffusion[index + 2, 2] and (0xFFL shl 40)) xor
+					(diffusion[index + 3, 3] and (0xFFL shl 32)) xor
+					(diffusion[index + 4, 4] and (0xFFL shl 24)) xor
+					(diffusion[index + 5, 5] and (0xFFL shl 16)) xor
+					(diffusion[index + 6, 6] and (0xFFL shl 8)) xor
+					(diffusion[index + 7, 7] and 0xFFL)
 			}
 		}
 

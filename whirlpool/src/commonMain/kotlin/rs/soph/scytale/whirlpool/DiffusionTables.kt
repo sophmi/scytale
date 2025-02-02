@@ -5,16 +5,16 @@ package rs.soph.scytale.whirlpool
 import rs.soph.scytale.common.longFromBytes
 
 /**
- * Lookup tables containing the premultiplication of the linear diffusion layer `θ` with the
- * non-linear layer `γ`, i.e. the 8x8 circulant MDS matrix multiplied by the substitution box
- * (for each element):
+ * Lookup tables used to mix the plaintext bits in a [Whirlpool] input.
  *
+ * The tables contain the premultiplication of the linear diffusion layer `θ` with the* non-linear layer `γ`, i.e.
+ * the 8x8 circulant MDS matrix multiplied by the substitution box (for each element):
  * ```θ ◦ γ ≡ cir(01, 01, 04, 01, 08, 05, 02, 09) * S_BOX[x]``` where `x ∈ GF(2^8)`.
  *
  * The premultiplication leads to an efficient implementation of `ρ[k]` as suggested in
  * 'The WHIRLPOOL Hashing Function', section 7.1.
  */
-internal object CirculantTables {
+internal object DiffusionTables {
 
 	/** Size of the 2^8 Galois field (i.e. the number of distinct values one byte can represent). */
 	private const val FIELD_SIZE = 1 shl Byte.SIZE_BITS
