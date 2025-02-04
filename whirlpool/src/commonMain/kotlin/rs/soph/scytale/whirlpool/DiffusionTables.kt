@@ -7,9 +7,9 @@ import rs.soph.scytale.common.longFromBytes
 /**
  * Lookup tables used to mix the plaintext bits in a [Whirlpool] input.
  *
- * The tables contain the premultiplication of the linear diffusion layer `θ` with the* non-linear layer `γ`, i.e.
+ * The tables contain the premultiplication of the linear diffusion layer `θ` with the non-linear layer `γ`, i.e.
  * the 8x8 circulant MDS matrix multiplied by the substitution box (for each element):
- * ```θ ◦ γ ≡ cir(01, 01, 04, 01, 08, 05, 02, 09) * S_BOX[x]``` where `x ∈ GF(2^8)`.
+ * ```cir(01, 01, 04, 01, 08, 05, 02, 09) * S_BOX[x]``` where `x ∈ GF(2^8)`.
  *
  * The premultiplication leads to an efficient implementation of `ρ[k]` as suggested in
  * 'The WHIRLPOOL Hashing Function', section 7.1.
