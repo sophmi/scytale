@@ -234,10 +234,10 @@ public class Whirlpool {
 	 * [reset] or [resetLazy] **must** be called prior to feeding any additional data.
 	 *
 	 * @param digest The [ByteArray] to write the digest to. Must be at least 64 bytes.
-	 * @param digestOffset The offset into [digest] to begin writing at. Must be `[0, digest.size - 64]`.
+	 * @param off The offset into [digest] to begin writing at. Must be `[0, digest.size - 64]`.
 	 */
 	@DelicateWhirlpoolApi
-	public fun finishLazy(digest: ByteArray, digestOffset: Int = 0): ByteArray {
+	public fun finishLazy(digest: ByteArray = ByteArray(DIGEST_SIZE_BYTES), off: Int = 0): ByteArray {
 		// Finished reading input, so bit pad it
 		val usedBits = (plaintextBits and 7).toInt()
 		buffer[offset] = buffer[offset] and ((1 shl usedBits) - 1).toByte() or (0x80 ushr usedBits).toByte()
@@ -255,7 +255,7 @@ public class Whirlpool {
 		buffer.putLong(BLOCK_SIZE_BYTES - Long.SIZE_BYTES, plaintextBits)
 		encipherBuffer()
 
-		return hash.copyInto(digest, digestOffset)
+		return hash.copyInto(digest, off)
 	}
 
 	/**
@@ -317,10 +317,10 @@ public class Whirlpool {
 		public const val DIGEST_SIZE_BYTES: Int = 64 * Byte.SIZE_BYTES
 
 		/** Number of **bits** the block cipher is applied to at once. */
-		private const val BLOCK_SIZE_BITS: Int = Matrix.WIDTH * Matrix.WIDTH * Byte.SIZE_BITS // 512
+		internal const val BLOCK_SIZE_BITS: Int = Matrix.WIDTH * Matrix.WIDTH * Byte.SIZE_BITS // 512
 
 		/** Number of **bytes** the block cipher is applied to at once. */
-		private const val BLOCK_SIZE_BYTES: Int = Matrix.WIDTH * Matrix.WIDTH * Byte.SIZE_BYTES // 64
+		internal const val BLOCK_SIZE_BYTES: Int = Matrix.WIDTH * Matrix.WIDTH * Byte.SIZE_BYTES // 64
 
 		/** Number of times to apply the [round] function. */
 		private const val ROUNDS: Int = 10
