@@ -44,19 +44,6 @@ abstract class WhirlpoolTest {
 	}
 
 	@Test
-	fun `input is buffered until block size is reached`() {
-		for ((input, _, hash, context) in vectors.bytes()) {
-			expectWhirlpool(hash, context) {
-				input.asSequence()
-					.chunked((input.size / 3).coerceAtLeast(1))
-					.forEach { add(it.toByteArray()) }
-
-				finish()
-			}
-		}
-	}
-
-	@Test
 	fun `addBits can add less than 8 bits per call`() {
 		for ((input, sizeBits, hash, context) in vectors) {
 			expectWhirlpool(hash, context) {
@@ -85,6 +72,24 @@ abstract class WhirlpoolTest {
 
 			expectWhirlpool(hash, context) {
 				addChunks(input, sizeBits, chunkSize = Whirlpool.BLOCK_SIZE_BITS)
+				finish()
+			}
+		}
+	}
+
+	@Test
+	fun `can interleave add and addBits calls`() {
+		for ((input, sizeBits, hash, context) in vectors) {
+			expectWhirlpool(hash, context) {
+				var i = 0
+				addChunks(input, sizeBits, chunkSize = 3) { input, offset, length ->
+					if (i++ % 2 == 0) {
+						add(input, offset, length)
+					} else {
+						addBits(input, offset, length * Byte.SIZE_BITS)
+					}
+				}
+
 				finish()
 			}
 		}
