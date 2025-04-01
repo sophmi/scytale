@@ -80,6 +80,10 @@ public class Whirlpool {
 			input.copyInto(buffer, this.offset, start, endIndex)
 			this.offset += endIndex - start
 			plaintextBits += count.toLong() * Byte.SIZE_BITS
+
+			// Clear the next byte in the buffer in case `addBits` is called after this,
+			// because it assumes `buffer[this.offset]` contains fresh data.
+			buffer[this.offset] = 0
 		}
 	}
 
