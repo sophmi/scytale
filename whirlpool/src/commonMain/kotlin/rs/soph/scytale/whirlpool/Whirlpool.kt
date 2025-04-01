@@ -67,7 +67,7 @@ public class Whirlpool {
 	 */
 	public fun add(input: ByteArray, offset: Int = 0, count: Int = input.size - offset) {
 		if (plaintextBits % Byte.SIZE_BITS != 0L) {
-			addBits(input)
+			addBits(input, offset, count.toLong() * Byte.SIZE_BITS)
 		} else {
 			val endIndex = offset + count
 			val start = if (count < BLOCK_SIZE_BYTES - this.offset) {
@@ -131,33 +131,39 @@ public class Whirlpool {
 	 * Feeds [count] bits of [input] into the block cipher.
 	 *
 	 * @param input The data to hash. Will not be modified.
+	 * @param byteOffset The offset in the `input array` to begin adding data from, in *bytes*.
 	 * @param count The number of bits to add.
 	 */
-	public fun addBits(input: ByteArray, count: Int) {
-		return addBits(input, count.toLong())
+	public fun addBits(input: ByteArray, byteOffset: Int, count: Int) {
+		return addBits(input, byteOffset, count.toLong())
 	}
 
 	/**
 	 * Feeds [count] bits of [input] into the block cipher.
 	 *
 	 * @param input The data to hash. Will not be modified.
+	 * @param byteOffset The offset in the `input array` to begin adding data from, in *bytes*.
 	 * @param count The number of bits to add.
 	 */
 	@JvmOverloads
-	public fun addBits(input: ByteArray, count: Long = input.size.toLong() * Byte.SIZE_BITS) {
+	public fun addBits(
+		input: ByteArray,
+		byteOffset: Int = 0,
+		count: Long = (input.size - byteOffset).toLong() * Byte.SIZE_BITS,
+	) {
 		if (count == 0L) return
 		var bitOffset = (plaintextBits % BLOCK_SIZE_BITS).toInt()
 
-		val ignored = (Byte.SIZE_BITS - (count and 7).toInt()) and 7 // amount of bits in input[off] that aren't copied
-		val usedOut = bitOffset % Byte.SIZE_BITS // amount of occupied bits in buffer[offset]
-		val freeOut = Byte.SIZE_BITS - usedOut // amount of available bits in buffer[offset]
+		val excess = (Byte.SIZE_BITS - (count and 7).toInt()) and 7 // amount of bits in input[pos] that aren't copied
+		val occupiedOut = bitOffset % Byte.SIZE_BITS // amount of occupied bits in buffer[offset]
+		val freeOut = Byte.SIZE_BITS - occupiedOut // amount of available bits in buffer[offset]
 		var remainingInput = count
-		var pos = 0
+		var pos = byteOffset
 
 		while (remainingInput > Byte.SIZE_BITS) {
-			val b = (input[pos].toInt() shl ignored and 0xFF) or (input[++pos].toInt() and 0xFF ushr (8 - ignored))
+			val b = (input[pos].toInt() shl excess and 0xFF) or (input[++pos].toInt() and 0xFF ushr (8 - excess))
 
-			buffer[offset] = buffer[offset] or (b ushr usedOut).toByte()
+			buffer[offset] = buffer[offset] or (b ushr occupiedOut).toByte()
 			offset++
 			bitOffset += freeOut
 
@@ -167,15 +173,15 @@ public class Whirlpool {
 			}
 
 			buffer[offset] = (b shl freeOut).toByte()
-			bitOffset += usedOut
+			bitOffset += occupiedOut
 
 			remainingInput -= Byte.SIZE_BITS
 		}
 
-		val b = input[pos].toInt() shl ignored and 0xFF
-		buffer[offset] = buffer[offset] or (b ushr usedOut).toByte()
+		val b = input[pos].toInt() shl excess and 0xFF
+		buffer[offset] = buffer[offset] or (b ushr occupiedOut).toByte()
 
-		if (usedOut + remainingInput >= Byte.SIZE_BITS) {
+		if (remainingInput >= freeOut) {
 			if (bitOffset + freeOut == BLOCK_SIZE_BITS) {
 				encipherBuffer()
 			} else {

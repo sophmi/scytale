@@ -64,10 +64,10 @@ abstract class WhirlpoolTest {
 
 				for (i in 0 until sizeBits) {
 					val byte = (i / Byte.SIZE_BITS).toInt()
-					val bit = i.toInt() % Byte.SIZE_BITS
+					val bit = (i % Byte.SIZE_BITS).toInt()
 					buffer[0] = (input[byte].toInt() ushr (7 - bit) and 1).toByte()
 
-					addBits(buffer, count = 1)
+					addBits(buffer, 0, 1)
 				}
 
 				finish()
@@ -77,25 +77,38 @@ abstract class WhirlpoolTest {
 
 	@Test
 	fun `addBits can add more than 8 bits per call`() {
-		for ((input, sizeBits, hash, context) in vectors.filter { it.sizeBits > 0 }) {
-			val chunkSize = 2
+		for ((input, sizeBits, hash, context) in vectors) {
+			expectWhirlpool(hash, context) {
+				addChunks(input, sizeBits, chunkSize = 3)
+				finish()
+			}
 
 			expectWhirlpool(hash, context) {
-				val buffer = ByteArray(chunkSize)
-
-				// Feed `chunkSize * 8` bits at a time until there are at most `chunkSize * 8` bits remaining
-				for (index in 0 until input.size - chunkSize step chunkSize) {
-					input.copyInto(buffer, startIndex = index, endIndex = index + chunkSize)
-					addBits(buffer, chunkSize * Byte.SIZE_BITS)
-				}
-
-				// Take the last 1..<chunkSize bytes
-				input.copyInto(buffer, startIndex = input.size - ((input.size - 1) % chunkSize + 1))
-				addBits(buffer, (sizeBits - 1) % (chunkSize * Byte.SIZE_BITS) + 1)
-
+				addChunks(input, sizeBits, chunkSize = Whirlpool.BLOCK_SIZE_BITS)
 				finish()
 			}
 		}
+	}
+
+	protected fun Whirlpool.addChunks(
+		input: ByteArray,
+		sizeBits: Long,
+		chunkSize: Int,
+		feed: Whirlpool.(ByteArray, Int, Int) -> Unit = Whirlpool::add,
+	) {
+		if (sizeBits == 0L) {
+			return
+		}
+
+		// Feed `chunkSize * 8` bits at a time until there are at most `chunkSize * 8` bits remaining
+		for (index in 0 until input.size - chunkSize step chunkSize) {
+			feed(input, index, chunkSize)
+		}
+
+		// Feed the last `1..(chunkSize * 8)` bits
+		val byteOffset = input.size - ((input.size - 1) % chunkSize + 1)
+		val remainingBits = (sizeBits - 1) % (chunkSize * Byte.SIZE_BITS) + 1
+		addBits(input, byteOffset, remainingBits)
 	}
 }
 
