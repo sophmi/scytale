@@ -49,13 +49,18 @@ abstract class WhirlpoolTest {
 			expectWhirlpool(hash, context) {
 				val buffer = ByteArray(1)
 
-				for (i in 0 until sizeBits) {
-					val byte = (i / Byte.SIZE_BITS).toInt()
-					val bit = (i % Byte.SIZE_BITS).toInt()
-					buffer[0] = (input[byte].toInt() ushr (7 - bit) and 1).toByte()
+				for (bitOffset in 0 until sizeBits - 7 step Byte.SIZE_BITS.toLong()) {
+					val offset = (bitOffset / Byte.SIZE_BITS).toInt()
+					val shift = (bitOffset % Byte.SIZE_BITS).toInt()
 
-					addBits(buffer, 0, 1)
+					buffer[0] = (input[offset].toInt() ushr shift).toByte()
+					addBits(buffer, 0, Byte.SIZE_BITS - shift)
+
+					addBits(input, offset, shift)
 				}
+
+				val remainingBits = sizeBits % Byte.SIZE_BITS
+				addBits(input, input.size - 1, remainingBits)
 
 				finish()
 			}
@@ -83,7 +88,7 @@ abstract class WhirlpoolTest {
 			expectWhirlpool(hash, context) {
 				var i = 0
 				addChunks(input, sizeBits, chunkSize = 3) { input, offset, length ->
-					if (i++ % 2 == 0) {
+					if (i++ and 1 == 0) {
 						add(input, offset, length)
 					} else {
 						addBits(input, offset, length * Byte.SIZE_BITS)
