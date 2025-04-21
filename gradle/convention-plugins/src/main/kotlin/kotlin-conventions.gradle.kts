@@ -1,11 +1,11 @@
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinTargetWithNodeJsDsl
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsPlugin
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
-import java.time.Duration
 
 plugins {
 	kotlin("multiplatform")
@@ -18,16 +18,9 @@ kotlin {
 	jvmToolchain(21)
 	explicitApi()
 
-	js(IR) {
-		browser {
-			testTask {
-				useKarma {
-					useChromeHeadless()
-					timeout = Duration.ofSeconds(30)
-				}
-			}
-		}
-		nodejs()
+	js {
+		browser()
+		registerNodeJsTarget()
 	}
 
 	jvm {
@@ -40,14 +33,7 @@ kotlin {
 
 	@OptIn(ExperimentalWasmDsl::class)
 	wasmJs {
-		browser {
-			testTask {
-				useKarma {
-					useChromeHeadless()
-					timeout = Duration.ofSeconds(30)
-				}
-			}
-		}
+		browser()
 		nodejs()
 	}
 
@@ -139,4 +125,14 @@ private fun KotlinMultiplatformExtension.registerNativeTargets() {
 	androidNativeX64()
 	mingwX64()
 	watchosDeviceArm64()
+}
+
+private fun KotlinTargetWithNodeJsDsl.registerNodeJsTarget() {
+	nodejs {
+		testTask {
+			useMocha {
+				timeout = "10s"
+			}
+		}
+	}
 }
